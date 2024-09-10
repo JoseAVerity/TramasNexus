@@ -9,6 +9,7 @@ class Validador:
         self.id_validacion = id_validacion  # id que indica el tipo de validación por la que pasará
         self.nombre_campo = nombre_campo  # Nombre del campo
         self.campos_parseados = campos_parseados  # todos los campos
+        self.errores = []
 
     def validar_todo(self, valor):
         """
@@ -27,7 +28,7 @@ class Validador:
             return es_valido, mensaje
 
         # Validaciones de tipo conjunto Ids empiezan con 2, conjuntos
-        if str(self.id_validacion).startswith("2"):
+        if str(self.id_validacion).startswith(("2", "3")):
             es_valido, mensaje = self.validar_valores_permitidos(valor)
             if not es_valido:
                 return es_valido, mensaje
@@ -35,6 +36,18 @@ class Validador:
         # Validaciones de tipo conjunto Ids empiezan con 3, dependencia con otros campos
         if str(self.id_validacion).startswith("3"):
             es_valido, mensaje = self.validar_dependencia(valor)
+            if not es_valido:
+                return es_valido, mensaje
+
+        # Validaciones de tipo conjunto Ids empiezan con 4, no puede contener
+        if str(self.id_validacion).startswith("4"):
+            es_valido, mensaje = self.validar_no_contiene(valor)
+            if not es_valido:
+                return es_valido, mensaje
+
+        # Validaciones de tipo conjunto Ids empiezan con 5, primeros numeros de tarjeta
+        if str(self.id_validacion).startswith("5"):
+            es_valido, mensaje = self.validar_inicio_tarjeta(valor)
             if not es_valido:
                 return es_valido, mensaje
 
@@ -49,8 +62,15 @@ class Validador:
         :return: Tupla (valido, mensaje) donde 'valido' es un booleano y 'mensaje' proporciona detalles sobre la validación.
         """
         if self.es_obligatorio == 1:
-            if valor.strip() == "":
-                return False, f"El campo '{self.nombre_campo}' es obligatorio y no puede estar vacío."
+            if not valor.strip():  # Verifica si el valor está vacío o solo contiene espacios
+                error = {
+                    'nombre_campo': self.nombre_campo,
+                    'valor': valor,  # Asegúrate de pasar el valor correcto aquí
+                    'tipo_error': 'Campo Obligatorio',
+                    'detalle_error': 'El campo no puede ser nulo o vacío.'
+                }
+                self.errores.append(error)
+                return False, error  # Solo devuelve el error actual, no la lista completa de errores
         return True, "ok"
 
     def es_numerico(self, valor):
@@ -65,7 +85,14 @@ class Validador:
 
         if self.tipo_valor == "Num":
             if not valor.isdigit():
-                return False, f"El campo '{self.nombre_campo}' con valor '{self.campo}' debe ser un valor numérico."
+                error = {
+                    'nombre_campo': self.nombre_campo,
+                    'valor': self.campo,
+                    'tipo_error': 'Campo Numérico',
+                    'detalle_error': f'El campo no puede contener letras u otros caracteres no numéricos.'
+                }
+                self.errores.append(error)
+                return False, error  # Solo devuelve el error actual, no la lista completa de errores
         return True, "ok"
 
     def validar_valores_permitidos(self, valor):
@@ -76,26 +103,64 @@ class Validador:
         """
         # Limpiar espacios en blanco al inicio y al final del valor
         valor_limpio = valor.strip()
-
+        mensaje = f'Los valores permitidos para el campo son:'
+        valores_permitidos = {}
         if self.id_validacion == 21:
             valores_permitidos = {"0100", "0200", "0120", "0220", "0400", "0420", "0302"}
         elif self.id_validacion == 22:
             valores_permitidos = {"1000", "2000", "3000", "4000"}
         elif self.id_validacion == 23:
             valores_permitidos = {"N"}
+            mensaje = f'El valor permitido para el campo es:'
         elif self.id_validacion == 24:
             valores_permitidos = {"D", "V", "C", "B", "E", "N"}
         elif self.id_validacion == 25:
             valores_permitidos = {"ATM", "POS"}
         elif self.id_validacion == 26:
             valores_permitidos = {"Cr", "De", "Pp"}
+        elif self.id_validacion == 27:
+            valores_permitidos = {"K", "C", "M"}
+        elif self.id_validacion == 28:
+            valores_permitidos = {"VIA", "BAA", "TBA", "TVT", "TMT"}
+        elif self.id_validacion == 29:
+            valores_permitidos = {"G", "D", "F", "P"}
+        elif self.id_validacion == 210:
+            valores_permitidos = {"620", "700", "710", "720", "750"}
+        elif self.id_validacion == 214:
+            valores_permitidos = {"ByteIN"}
+            mensaje = f'El valor permitido para el campo es:'
+        elif self.id_validacion == 213:
+            valores_permitidos = {"08650"}
+            mensaje = f'El valor permitido para el campo es:'
+        elif self.id_validacion == 215:
+            valores_permitidos = {"  "}
+            mensaje = f'El valor permitido para el campo es:'
+        elif self.id_validacion == 216:
+            valores_permitidos = {"  ", "R "}
+        elif self.id_validacion == 217:
+            valores_permitidos = {"   ", "1  "}
+        elif self.id_validacion == 220:
+            valores_permitidos = {"S", "N"}
+        elif self.id_validacion == 221:
+            valores_permitidos = {"S", "M"}
+        elif self.id_validacion == 31:
+            valores_permitidos = {"S", "N"}
+        elif self.id_validacion == 32:
+            valores_permitidos = {"000002", "000001"}
 
         # Permitir valores vacíos
         if valor_limpio == "":
             return True, "ok"
 
         if valor not in valores_permitidos:
-            return False, f"El campo '{self.nombre_campo}' con valor '{self.campo}' debe tener un valor dentro de los valores permitidos: {', '.join(valores_permitidos)}."
+            error = {
+                'nombre_campo': self.nombre_campo,
+                'valor': self.campo,
+                'tipo_error': 'Valores permitidos',
+                'detalle_error': f'{mensaje} {valores_permitidos}.'
+            }
+            self.errores.append(error)
+            return False, error  # Solo devuelve el error actual, no la lista completa de errores
 
         return True, "ok"
 
@@ -141,15 +206,76 @@ class Validador:
         # Realiza la validación
         if campo_a in valores_validos_campo_a:
             if valor == campo_bno:
-                return False, f"El campo '{self.nombre_campo}' con valor '{valor}' debe ser '{campo_bsi}' si el campo en la posición {pos+1} es {', '.join(valores_validos_campo_a)}."
+                error = {
+                    'nombre_campo': self.nombre_campo,
+                    'valor': self.campo,
+                    'tipo_error': 'Dependencia de campos',
+                    'detalle_error': f"El campo debe ser '{campo_bsi}' si el campo en la posición {pos+1}: '{campo_a}' es {valores_validos_campo_a}."
+                }
+                self.errores.append(error)
+                return False, error  # Solo devuelve el error actual, no la lista completa de errores
             return True, "ok"
         elif valor == campo_bsi:
-            return False, f"El campo '{self.nombre_campo}' con valor '{valor}' no debe ser '{campo_bsi}' si el campo en la posición {pos+1} no es {', '.join(valores_validos_campo_a)}."
+            error = {
+                'nombre_campo': self.nombre_campo,
+                'valor': self.campo,
+                'tipo_error': 'Dependencia de campos',
+                'detalle_error': f"El campo debe ser '{campo_bno}' si el campo en la posición {pos+1}: '{campo_a}' no es {valores_validos_campo_a}."
+            }
+            self.errores.append(error)
+            return False, error  # Solo devuelve el error actual, no la lista completa de errores
 
         return True, "ok"
 
+    def validar_no_contiene(self, valor):
+        """
+        Verifica que el valor no contenga las subcadenas 'ByteIN' o 'ByteF'.
 
+        :param valor: La cadena que se desea validar.
+        :return: (bool, str) - True si la cadena es válida, False si contiene subcadenas no permitidas, y el mensaje de validación.
+        """
+        subcadenas_no_permitidas = ["ByteIN", "ByteF"]
 
+        for subcadena in subcadenas_no_permitidas:
+            if subcadena in valor:
+                error = {
+                    'nombre_campo': self.nombre_campo,
+                    'valor': self.campo,
+                    'tipo_error': 'Excluir Valor',
+                    'detalle_error': f"El campo no puede contener la subcadena: '{subcadena}'."
+                }
+                self.errores.append(error)
+                return False, error  # Solo devuelve el error actual, no la lista completa de errores
+
+        return True, "ok"
+
+    def validar_inicio_tarjeta(self, valor):
+        # Verificar si los primeros 8 caracteres de campo2 son iguales a campo1
+        cant = None
+        campo = None
+        if self.id_validacion == 51:
+            cant = 8
+            campo = 6
+            mensaje = f"El campo tiene que ser igual a los primeros '{cant}' dígitos de la tarjeta campo {campo}: '{self.campos_parseados[campo][:cant]}'."
+        elif self.id_validacion == 52:
+            cant = 6
+            campo = 6
+            mensaje = f"El campo tiene que ser igual a los primeros '{cant}' dígitos de la tarjeta campo {campo}: '{self.campos_parseados[campo][:cant]}'."
+        elif self.id_validacion == 53:
+            cant = 3
+            campo = 24
+            mensaje = f"El campo tiene que ser igual al campo {campo}: '{self.campos_parseados[campo][:cant]}'."
+        if valor == self.campos_parseados[campo][:cant]:
+            return True, "ok"
+        else:
+            error = {
+                'nombre_campo': self.nombre_campo,
+                'valor': self.campo,
+                'tipo_error': 'Dependencia de campos',
+                'detalle_error': mensaje
+            }
+            self.errores.append(error)
+            return False, error  # Solo devuelve el error actual, no la lista completa de errores
 
 
 
