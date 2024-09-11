@@ -378,6 +378,7 @@ largo = datos_excel['largo']
 cadena_parceada = controlador.extraer_subcadenas(cadena_ejemplo, inicio, largo)
 print(cadena_parceada)
 
+
 # Generar Reporte
 controlador.generar_reporte_pdf()
 
