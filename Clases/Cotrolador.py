@@ -5,7 +5,8 @@ from datetime import time
 import pandas as pd
 import openpyxl
 import time
-import configparser
+
+from Clases.Config import Config
 from Clases.Validador import Validador
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -22,14 +23,12 @@ from reportlab.lib.pagesizes import A4
 class Controlador:
 
     def __init__(self, canti_registros):
-        config = configparser.ConfigParser()
-        config.read('config.ini')
-        self.ruta_txt = config['DIRECTORY_TRAMAS']['path_txt_trama']
-        # self.ruta_txt = r"C:\Users\Usuario\PycharmProjects\TramasNexus\archivos\MPLUS 8650 QA2.txt"
-        self.ruta_txt_result = r"C:\Users\Usuario\PycharmProjects\TramasNexus\archivos\result_8050.txt"
-        self.ruta_excel = r"C:\Users\Usuario\PycharmProjects\TramasNexus\archivos\Informacion Trama.xlsx"
-        self.ruta_excel_salida = r"C:\Users\Usuario\PycharmProjects\TramasNexus\archivos\Parceador.xlsx"
-        self.ruta_pdf_salida = "C:/Users/Usuario/PycharmProjects/TramasNexus/archivos/"
+        self.config = Config()
+        self.ruta_txt = self.config.obtener_path("PATH_TXT")
+        self.ruta_txt_result = self.config.obtener_path("PATH_EXCEL_RESULT")
+        self.ruta_excel = self.config.obtener_path("PATH_EXCEL")
+        self.ruta_excel_salida = self.config.obtener_path("PATH_EXCEL_SALIDA")
+        self.ruta_pdf_salida = self.config.obtener_path("PATH_PDF")
         self.lineas_txt = []
         self.tipo_caracteres = []
         self.requerido = []
@@ -370,6 +369,7 @@ class Controlador:
 # Ejemplo de uso:
 # Se crea el controlador con 10 registros a validar
 controlador = Controlador(10)
+print(controlador.ruta_txt)
 
 # Se leen los documentos de entrada
 controlador.leer_archivo_txt()
