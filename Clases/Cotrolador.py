@@ -1,9 +1,10 @@
 import os
 import statistics
+from datetime import time
 
 import pandas as pd
 import openpyxl
-from openpyxl.styles import Alignment, Font
+import time
 from Clases.Validador import Validador
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -17,8 +18,9 @@ from reportlab.lib.pagesizes import A4
 class Controlador:
     def __init__(self, canti_registros):
         self.ruta_txt = r"C:\Users\Usuario\PycharmProjects\TramasNexus\archivos\MPLUS 8650 QA2.txt"
+        self.ruta_txt_result = r"C:\Users\Usuario\PycharmProjects\TramasNexus\archivos\result_8050.txt"
         self.ruta_excel = r"C:\Users\Usuario\PycharmProjects\TramasNexus\archivos\Informacion Trama.xlsx"
-        self.ruta_excel_salida = r"C:\Users\Usuario\PycharmProjects\TramasNexus\archivos\Casos de Prueba.xlsx"
+        self.ruta_excel_salida = r"C:\Users\Usuario\PycharmProjects\TramasNexus\archivos\Parceador.xlsx"
         self.ruta_pdf_salida = "C:/Users/Usuario/PycharmProjects/TramasNexus/archivos/"
         self.lineas_txt = []
         self.tipo_caracteres = []
@@ -103,7 +105,7 @@ class Controlador:
         return subcadenas
 
     def validar_campos(self):
-
+        inicio = time.time()
         reportes = []
         errore_reportes = []
         list_tipo = self.tipo_caracteres
@@ -127,7 +129,13 @@ class Controlador:
             reportes.append(reporte)
             errore_reportes.append(len(reporte))
         media = statistics.mean(errore_reportes)
-        print("Validación concluida:")
+        # Registrar el tiempo de finalización
+        fin = time.time()
+
+        # Calcular el tiempo de ejecución
+        tiempo_total = fin - inicio
+
+        print(f"Validación concluida en {tiempo_total:.2f} segundos.:")
         print(f"Total de Registros: {len(self.lineas_txt)}")
         print(f"Registros validados: {self.cant_registros}")
         print(f"Registros con errores: {len(reportes)}")
@@ -135,6 +143,7 @@ class Controlador:
         return reportes
 
     def generar_reporte_pdf(self):
+        inicio = time.time()
         # Cargar el archivo Excel
         wb = openpyxl.load_workbook(self.ruta_excel)
         hoja = wb.active
@@ -219,6 +228,7 @@ class Controlador:
         datos_tabla2 = [
             ["Trama 8650", ""],
             ["Total de Registros", len(registros)],
+            ["Total de Registros Validados", self.cant_registros],
             ["Cantidad de Registros Malos", len(validaciones)],
         ]
         # Crear y estilizar la tabla
@@ -247,7 +257,7 @@ class Controlador:
 
             datos_tabla3 = [
                 ["Registro", i + 1],
-                ["Total de Campos", 144],
+                ["Total de Campos", 149],
                 ["Cantidad de Campos Malos", len(registro)]
             ]
             # Crear y estilizar la tabla
@@ -308,29 +318,68 @@ class Controlador:
             elementos.append(tabla4)
         # Crear el PDF
         pdf.build(elementos)
-        print(f"PDF generado: {nombre_archivo}")
+        # Registrar el tiempo de finalización
+        fin = time.time()
 
-# Llama a este método después de generar el Excel
-def generar_excel_y_evidencia(self, campos_parseados, ruta_excel_salida):
-    self.generar_CP(campos_parseados)
-    self.generar_reporte_pdf(ruta_excel_salida)
+        # Calcular el tiempo de ejecución
+        tiempo_total = fin - inicio
+        print(f"Archivo Excel '{nombre_archivo}' generado exitosamente en {tiempo_total:.2f} segundos.")
 
 
+
+    def generar_parceador(self):
+
+        # Crear un nuevo libro de trabajo
+        wb = openpyxl.Workbook()
+
+        # Seleccionar la hoja activa
+        hoja = wb.active
+
+        # Escribir los nombres de las columnas en la primera fila
+        for col_num, self.nombre_campo in enumerate(self.nombre_campo, start=1):
+            hoja.cell(row=1, column=col_num, value=self.nombre_campo)
+
+        datos = controlador.extraer_subcadenas(self.lineas_txt[0], self.inicio, self.largo)
+        # Escribir los datos en las filas siguientes
+        for col_num, valor in enumerate(datos, start=1):
+            hoja.cell(row=2, column=col_num, value=valor)
+
+        # Leer el archivo de texto plano
+        with open(self.ruta_txt_result, "r") as archivo:
+                lineas = archivo.readlines()
+
+        # Recorrer las líneas y separarlas por punto y coma
+        datos_fila = lineas[1].strip().split(';')
+        for col_num, valor in enumerate(datos_fila, start=1):
+            hoja.cell(row=3, column=col_num, value=valor)
+
+
+
+        # Guardar el archivo Excel
+        wb.save(self.ruta_excel_salida)
+
+        print(f"Archivo Excel '{self.ruta_excel_salida}' generado exitosamente.")
 # Ejemplo de uso:
+# Se crea el controlador con 10 registros a validar
+controlador = Controlador(10)
 
-
-controlador = Controlador(1000)
+# Se leen los documentos de entrada
 controlador.leer_archivo_txt()
 controlador.leer_archivo_excel()
 
+# Se obtienen los datos leidos
 lineas_txt = controlador.obtener_datos_txt()
 datos_excel = controlador.obtener_datos_excel()
 
-# Ejemplo de cadena y listas de inicio y largo
+# Ejemplo de cadena y listas de inicio y largo para parcear un registro
 cadena_ejemplo = lineas_txt[0]  # Suponiendo que quieres procesar la primera línea del archivo TXT
 inicio = datos_excel['inicio']
 largo = datos_excel['largo']
+cadena_parceada = controlador.extraer_subcadenas(cadena_ejemplo, inicio, largo)
+print(cadena_parceada)
 
-# Llamar al método extraer_subcadenas
-# controlador.generar_CP(subcadenas)
+# Generar Reporte
 controlador.generar_reporte_pdf()
+
+# Generar Parceador
+# controlador.generar_parceador()

@@ -115,13 +115,13 @@ class Validador:
         elif self.id_validacion == 24:
             valores_permitidos = {"D", "V", "C", "B", "E", "N"}
         elif self.id_validacion == 25:
-            valores_permitidos = {"ATM", "POS"}
+            valores_permitidos = {"ATM   ", "POS   "}
         elif self.id_validacion == 26:
             valores_permitidos = {"Cr", "De", "Pp"}
         elif self.id_validacion == 27:
-            valores_permitidos = {"K", "C", "M"}
+            valores_permitidos = {"K ", "C ", "M "}
         elif self.id_validacion == 28:
-            valores_permitidos = {"VIA", "BAA", "TBA", "TVT", "TMT"}
+            valores_permitidos = {"VIA   ", "BAA   ", "TBA   ", "TVT   ", "TMT   "}
         elif self.id_validacion == 29:
             valores_permitidos = {"G", "D", "F", "P"}
         elif self.id_validacion == 210:
