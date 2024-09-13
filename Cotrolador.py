@@ -23,7 +23,7 @@ class Controlador:
 
     def __init__(self, canti_registros):
         self.config = configparser.ConfigParser()
-        self.config.read(r'C:/Users/Usuario/PycharmProjects/TramasNexus/config.ini')
+        self.config.read('config.ini')
         self.ruta_txt = self.config["PATH"]["PATH_TXT"]
         self.ruta_txt_result = self.config["PATH"]["PATH_EXCEL_RESULT"]
         self.ruta_excel = self.config["PATH"]["PATH_EXCEL"]
@@ -173,7 +173,7 @@ class Controlador:
 
         # Primera página - Título, imagen y tabla
         # Ruta de la imagen
-        image_path = r'C:\Users\Usuario\PycharmProjects\TramasNexus\imagenes\Imagen1.png'
+        image_path = self.config["PATH"]["PATH_IMAGEN"]
 
         # Obtener dimensiones originales de la imagen
         with PILImage.open(image_path) as img:
