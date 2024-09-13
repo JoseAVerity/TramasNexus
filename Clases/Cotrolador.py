@@ -5,8 +5,7 @@ from datetime import time
 import pandas as pd
 import openpyxl
 import time
-
-from Clases.Config import Config
+import configparser
 from Clases.Validador import Validador
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -23,12 +22,13 @@ from reportlab.lib.pagesizes import A4
 class Controlador:
 
     def __init__(self, canti_registros):
-        self.config = Config()
-        self.ruta_txt = self.config.obtener_path("PATH_TXT")
-        self.ruta_txt_result = self.config.obtener_path("PATH_EXCEL_RESULT")
-        self.ruta_excel = self.config.obtener_path("PATH_EXCEL")
-        self.ruta_excel_salida = self.config.obtener_path("PATH_EXCEL_SALIDA")
-        self.ruta_pdf_salida = self.config.obtener_path("PATH_PDF")
+        self.config = configparser.ConfigParser()
+        self.config.read(r'C:/Users/Usuario/PycharmProjects/TramasNexus/config.ini')
+        self.ruta_txt = self.config["PATH"]["PATH_TXT"]
+        self.ruta_txt_result = self.config["PATH"]["PATH_EXCEL_RESULT"]
+        self.ruta_excel = self.config["PATH"]["PATH_EXCEL"]
+        self.ruta_excel_salida = self.config["PATH"]["PATH_EXCEL_SALIDA"]
+        self.ruta_pdf_salida = self.config["PATH"]["PATH_PDF"]
         self.lineas_txt = []
         self.tipo_caracteres = []
         self.requerido = []
