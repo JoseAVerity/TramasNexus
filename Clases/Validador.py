@@ -11,6 +11,7 @@ class Validador:
         self.campos_parseados = campos_parseados  # todos los campos
         self.errores = []
 
+
     def validar_todo(self, valor):
         """
         Ejecuta todas las validaciones sobre el valor.
@@ -265,6 +266,7 @@ class Validador:
             cant = 3
             campo = 24
             mensaje = f"El campo tiene que ser igual al campo {campo}: '{self.campos_parseados[campo][:cant]}'."
+
         if valor == self.campos_parseados[campo][:cant]:
             return True, "ok"
         else:

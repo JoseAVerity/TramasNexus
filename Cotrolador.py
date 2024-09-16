@@ -39,12 +39,13 @@ class Controlador:
         self.detalleValidacion = []
         self.cant_registros = canti_registros
 
+
     def leer_archivo_txt(self):
         try:
             with open(self.ruta_txt, 'r', encoding='utf-8') as archivo:
                 self.lineas_txt = archivo.readlines()
             self.lineas_txt = [linea.strip() for linea in self.lineas_txt]
-            print("Archivo TXT leído correctamente.")
+            print(f"Archivo TXT leído correctamente con {len(self.lineas_txt)} registros.")
         except FileNotFoundError:
             print(f"Error: El archivo {self.ruta_txt} no se encontró.")
         except Exception as e:
@@ -120,9 +121,14 @@ class Controlador:
         list_id_validacion = self.id_validacion
         list_nombre_campo = self.nombre_campo
 
+        if self.cant_registros > len(self.lineas_txt):
+            self.cant_registros = len(self.lineas_txt)
+
+
         for n in range(self.cant_registros):
             registro1 = self.lineas_txt[n] if self.lineas_txt else ""
             # Dividir el registro en subcadenas
+
             registro_parseado = self.extraer_subcadenas(registro1, self.inicio, self.largo)
             reporte = []
             for i in range(len(registro_parseado)):
@@ -156,7 +162,7 @@ class Controlador:
         hoja = wb.active
 
         registros = self.lineas_txt
-        validaciones = controlador.validar_campos()
+        validaciones = None
 
         # Crear un archivo PDF
         nombre_archivo = f"Reporte de Errores de Trama 8650.pdf"
@@ -203,8 +209,10 @@ class Controlador:
         elementos.append(Spacer(1, 0.5 * inch))
 
         mensaje_estado_ejecucion = "Prueba OK"
-        if len(validaciones) > 0:
-            mensaje_estado_ejecucion = "Prueba Fallida"
+        if len(registros) != 0:
+            validaciones = controlador.validar_campos()
+            if len(validaciones) > 0:
+               mensaje_estado_ejecucion = "Prueba Fallida"
 
         datos_tabla = [
             ["ID Caso de Prueba", "00001"],
@@ -230,8 +238,14 @@ class Controlador:
 
         # Espaciado entre tablas
         elementos.append(Spacer(1, 0.5 * inch))
+        if len(registros) == 0:
+            print("La Trama no contiene ningun registro")
+            elementos.append(Paragraph("La Trama no contiene ningun registro", estilo_titulo))
+            # Crear el PDF
+            pdf.build(elementos)
+            return
 
-        # Crear la tabla con el Resumen de Validaciones
+            # Crear la tabla con el Resumen de Validaciones
         datos_tabla2 = [
             ["Trama 8650", ""],
             ["Total de Registros", len(registros)],
@@ -366,6 +380,7 @@ class Controlador:
         wb.save(self.ruta_excel_salida)
 
         print(f"Archivo Excel '{self.ruta_excel_salida}' generado exitosamente.")
+
 # Ejemplo de uso:
 # Se crea el controlador con 10 registros a validar
 controlador = Controlador(10)
@@ -380,11 +395,11 @@ lineas_txt = controlador.obtener_datos_txt()
 datos_excel = controlador.obtener_datos_excel()
 
 # Ejemplo de cadena y listas de inicio y largo para parcear un registro
-cadena_ejemplo = lineas_txt[0]  # Suponiendo que quieres procesar la primera línea del archivo TXT
-inicio = datos_excel['inicio']
-largo = datos_excel['largo']
-cadena_parceada = controlador.extraer_subcadenas(cadena_ejemplo, inicio, largo)
-print(cadena_parceada)
+#cadena_ejemplo = lineas_txt[0]  # Suponiendo que quieres procesar la primera línea del archivo TXT
+#inicio = datos_excel['inicio']
+#largo = datos_excel['largo']
+#cadena_parceada = controlador.extraer_subcadenas(cadena_ejemplo, inicio, largo)
+#print(cadena_parceada)
 
 
 # Generar Reporte
