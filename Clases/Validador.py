@@ -267,7 +267,7 @@ class Validador:
             campo = 24
             mensaje = f"El campo tiene que ser igual al campo {campo}: '{self.campos_parseados[campo][:cant]}'."
 
-        if valor == self.campos_parseados[campo][:cant]:
+        if valor.strip() == self.campos_parseados[campo][:cant].strip():
             return True, "ok"
         else:
             error = {

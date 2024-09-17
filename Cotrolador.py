@@ -245,12 +245,24 @@ class Controlador:
             pdf.build(elementos)
             return
 
+        registros_malos = 0
+        for registro in validaciones:
+            if len(registro) != 0:  # Verifica si el registro está vacío (sin errores)
+                registros_malos += 1
+
+        if registros_malos == 0:
+            print("La Trama no contiene Registros Malos")
+            elementos.append(Paragraph("La Trama no contiene Registros Malos", estilo_titulo))
+            # Crear el PDF
+            pdf.build(elementos)
+            return
+
             # Crear la tabla con el Resumen de Validaciones
         datos_tabla2 = [
             ["Trama 8650", ""],
             ["Total de Registros", len(registros)],
             ["Total de Registros Validados", self.cant_registros],
-            ["Cantidad de Registros Malos", len(validaciones)],
+            ["Cantidad de Registros Malos", registros_malos],
         ]
         # Crear y estilizar la tabla
         tabla2 = Table(datos_tabla2, colWidths=[200, 200])
@@ -275,7 +287,8 @@ class Controlador:
         for i, registro in enumerate(validaciones):
             # Espaciado entre tablas
             elementos.append(Spacer(1, 0.5 * inch))
-
+            if len(registro)==0:
+                continue
             datos_tabla3 = [
                 ["Registro", i + 1],
                 ["Total de Campos", 149],
