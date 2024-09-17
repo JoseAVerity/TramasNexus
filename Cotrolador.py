@@ -208,11 +208,20 @@ class Controlador:
         # Espaciado entre título y tabla
         elementos.append(Spacer(1, 0.5 * inch))
 
+        registros_malos = 0
+
         mensaje_estado_ejecucion = "Prueba OK"
         if len(registros) != 0:
             validaciones = controlador.validar_campos()
-            if len(validaciones) > 0:
-               mensaje_estado_ejecucion = "Prueba Fallida"
+            for registro in validaciones:
+                if len(registro) > 0:
+                    registros_malos += 1
+
+            if registros_malos > 0:
+                mensaje_estado_ejecucion = "Prueba Fallida"
+        else:
+            mensaje_estado_ejecucion = "Prueba Fallida"
+
 
         datos_tabla = [
             ["ID Caso de Prueba", "00001"],
@@ -245,10 +254,7 @@ class Controlador:
             pdf.build(elementos)
             return
 
-        registros_malos = 0
-        for registro in validaciones:
-            if len(registro) != 0:  # Verifica si el registro está vacío (sin errores)
-                registros_malos += 1
+
 
         if registros_malos == 0:
             print("La Trama no contiene Registros Malos")
@@ -393,7 +399,6 @@ class Controlador:
         wb.save(self.ruta_excel_salida)
 
         print(f"Archivo Excel '{self.ruta_excel_salida}' generado exitosamente.")
-
 # Ejemplo de uso:
 # Se crea el controlador con 10 registros a validar
 controlador = Controlador(10)
